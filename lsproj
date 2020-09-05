@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+# coding=UTF-8
+
+import os
+import sys
+from collections import namedtuple
+SEARCH_START = sys.argv[1:]
+RECURSION_LIMIT = 3
+GENERIC_PROJECT = ['generic', '']
+PROJECT_ROOT_MARKERS = {
+    'package.json': ['JS', '/'],
+    'Pipfile': ['Python', ''],
+    'meson.build': ['C++', ''],
+    'CMakeLists.txt': ['C++', ''],
+    'pyproject.toml': ['Python', ''],
+    'requirements.txt': ['Python', ''],
+    'Cargo.toml': ['Rust', '']
+}
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+ProjectRoot = namedtuple('ProjectRoot', ['path', 'type'])
+
+
+def iterate_folder(root, n=1):
+
+    if n > RECURSION_LIMIT:
+        return []
+
+    items = list(os.listdir(root))
+
+    # check if the root is a project root, while checking for generic project (.git) as well
+
+    is_git = False
+    for item in items:
+        if item in PROJECT_ROOT_MARKERS:
+            full_path = os.path.join(root, item)
+            return [ProjectRoot(root, PROJECT_ROOT_MARKERS[item])]
+        if item == '.git':
+            is_git = True
+
+    if is_git:
+        return [ProjectRoot(root, GENERIC_PROJECT)]
+    projects = []
+    for item in os.listdir(root):
+        full_path = os.path.join(root, item)
+        if os.path.isdir(full_path):
+            project_paths = iterate_folder(full_path, n=n + 1)
+            projects += project_paths
+
+    return projects
+
+
+if __name__ == "__main__":
+    project_roots = []
+
+    for search_folder in SEARCH_START:
+        p = os.path.realpath(search_folder)
+        print(p)
+        project_roots += iterate_folder(p)
+
+    for root in project_roots:
+        project_name = os.path.split(root.path)[1]
+        print(".\t", bcolors.OKBLUE + root.type[1]+ bcolors.ENDC, '\t',bcolors.OKGREEN+project_name+bcolors.ENDC, '\t ', root.path)
