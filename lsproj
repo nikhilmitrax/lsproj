@@ -64,7 +64,6 @@ if __name__ == "__main__":
 
     for search_folder in SEARCH_START:
         p = os.path.realpath(search_folder)
-        print(p)
         project_roots += iterate_folder(p)
 
     for root in project_roots:
