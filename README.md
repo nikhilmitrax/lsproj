@@ -8,5 +8,5 @@ Make sure lsproj is somewhere in `PATH`, then use it to cd into project files qu
 
 
 ```
-alias cdp = (lsproj ~/Documents ~/dev |column -t | fzf --ansi --preview='onefetch -d {4}' --preview-window=up:30 --border -n 3)
+alias cdp = (lsproj ~/Documents ~/dev |column -t | fzf --ansi --preview='onefetch -d {4}' --preview-window=up:30 --border -n 3 | awk '{print $4}')
 ```
